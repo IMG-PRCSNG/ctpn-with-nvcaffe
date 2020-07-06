@@ -14,3 +14,10 @@ CTPN: Link to [fork](https://github.com/IMG-PRCSNG/CTPN) used in the project
 3. Connect to a Runtime with GPU and execute.
 
 Have fun!
+
+# Watch this repo for
+
+- Comparision of inference runtime of baseline against NVCaffe TRT Layer
+- Memory consumption with `FP16`
+- CTPN with `TensorRT` and `Triton Inference Server`
+- Inference Optimization with Python `Multiprocessing` and `Asyncio`
