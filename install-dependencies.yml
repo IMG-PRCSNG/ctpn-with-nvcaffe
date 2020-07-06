@@ -1,0 +1,162 @@
+- name: Provision ctpn env
+  hosts: "{{ hosts | default('all') }}"
+  gather_facts: false
+
+  tasks:
+    - name: Upgrade
+      block:
+          - apt: update_cache=yes
+          - apt: autoremove=yes
+      become: yes
+
+    - name: Install ca-certs
+      apt:
+          name: "{{ packages }}"
+          state: present
+          install_recommends: no
+      vars:
+          packages:
+          - apt-transport-https
+          - curl
+          - wget
+          - ca-certificates
+          - software-properties-common
+          - apt-utils
+          - gnupg
+      become: yes
+
+    - name: Install git lfs apt repo
+      shell: curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
+      args:
+          creates: /etc/apt/sources.list.d/github_git-lfs.list
+      become: yes
+
+    - name: Install cuda apt repo
+      block:
+        - name: cuda-apt-key
+          apt_key:
+              url: "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub"
+              state: present
+        - name: cuda-deb-repo
+          apt_repository:
+              repo: "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/ /"
+              state: present
+        - name: cudnn-repo
+          shell: echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
+      become: yes
+
+    - name: packages
+      apt:
+          name: "{{ packages }}"
+          update_cache: yes
+          state: present
+          install_recommends: no
+      vars:
+          packages:
+          - cuda-10-1=10.1.243-1
+          - libcudnn7=7.6.5.32-1+cuda10.1
+          - libcudnn7-dev=7.6.5.32-1+cuda10.1
+          - git
+          - git-lfs
+          - build-essential
+          - pkg-config
+          - make
+          - libopenblas-dev
+          - bzip2
+          - python3-dev
+          - libssl-dev
+          - libbz2-dev
+          - libreadline-dev
+          - libsqlite3-dev
+          - libcurl4-openssl-dev
+          - libncurses5-dev
+          - zlib1g-dev
+          - libconfig++-dev
+          - libboost-all-dev
+          - libgflags-dev
+          - libgoogle-glog-dev
+          - libhdf5-dev
+          - libhdf5-serial-dev
+          - liblmdb-dev
+          - libleveldb-dev
+          - libsnappy-dev
+          - libopenblas-dev
+          - libopencv-dev
+          - libprotobuf-dev
+          - libturbojpeg-dev
+          - protobuf-compiler
+          - unzip
+      become: yes
+
+    - name: Setup CMAKE 3.14
+      block:
+      - command:
+        args:
+            chdir: /tmp
+            argv:
+            - "/usr/bin/curl"
+            - "-sLO"
+            - "https://github.com/Kitware/CMake/releases/download/v3.14.1/cmake-3.14.1-Linux-x86_64.sh"
+      - command:
+        args:
+            chdir: /tmp
+            argv:
+            - "/bin/bash"
+            - "cmake-3.14.1-Linux-x86_64.sh"
+            - "--prefix=/usr/local"
+            - "--skip-license"
+            - "--exclude-subdir"
+        become: yes
+
+    - name: install-caffe
+      unarchive:
+          src: ./nvcaffe-ctpn-ubuntu1804-cuda101-cudnn7-x86_64.tar.gz
+          dest: /usr/local
+      become: yes
+
+    - name: Ensure LD_SEARCH has the lines for opencv and cuda
+      blockinfile:
+          path: /etc/ld.so.conf.d/usr-libs.conf
+          create: yes
+          block: |
+            {{ item }}
+    
+          marker: "# {mark} ANSIBLE_MANAGED BLOCK {{ item }}"
+      become: yes
+      with_items:
+      - /usr/local/lib
+    #  - /usr/local/cuda/lib64
+    #  - /usr/local/cuda/extras/CUPTI/lib64
+    
+    - name: clone-ctpn
+      git:
+        repo: https://github.com/IMG-PRCSNG/CTPN.git
+        dest: ctpn
+        version: master
+        depth: 1
+        force: yes
+        accept_hostkey: yes
+
+    - name: compile-ctpn
+      shell: PYTHON_VERSION=3.6 /bin/bash build.sh
+      args:
+        chdir: ctpn
+
+    - name: copy-model
+      copy:
+        dest: "/content/ctpn/models/ctpn_trained_model.caffemodel"
+        src: "/content/gdrive/My Drive/drive-sync/ctpn_trained_model.caffemodel"
+        mode: 0644
+
+- name: cleanup
+  hosts: "{{ hosts | default('all') }}"
+  gather_facts: no
+  tasks:
+    - name:
+      raw: apt-get clean
+      become: true
+
+    - name: Remove apt lists
+      raw: rm -rf /var/lib/apt/lists/* && rm -f /etc/apt/apt.conf.d/01proxy
+      become: true
+
