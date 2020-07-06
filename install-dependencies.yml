@@ -25,12 +25,6 @@
           - gnupg
       become: yes
 
-    - name: Install git lfs apt repo
-      shell: curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
-      args:
-          creates: /etc/apt/sources.list.d/github_git-lfs.list
-      become: yes
-
     - name: Install cuda apt repo
       block:
         - name: cuda-apt-key
@@ -57,7 +51,6 @@
           - libcudnn7=7.6.5.32-1+cuda10.1
           - libcudnn7-dev=7.6.5.32-1+cuda10.1
           - git
-          - git-lfs
           - build-essential
           - pkg-config
           - make

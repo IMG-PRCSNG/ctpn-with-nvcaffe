@@ -1,0 +1,20 @@
+- name: setup lfs
+  hosts: "{{ hosts | default('all') }}"
+  gather_facts: false
+
+  tasks:
+    - name: Install git lfs apt repo
+      shell: curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
+      args:
+          creates: /etc/apt/sources.list.d/github_git-lfs.list
+      become: yes
+
+    - name: install-lfs
+      apt:
+        name: git-lfs
+        update_cache: yes
+        state: present
+        install_recommends: no
+
+    - name: initialise-lfs
+      command: git lfs install

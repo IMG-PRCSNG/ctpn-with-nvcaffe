@@ -11,13 +11,18 @@ function install_ansible() {
     fi
 }
 
+function install_lfs() {
+    ansible-playbook install-lfs.yml --extra-vars=hosts=localhost
+    git lfs fetch && git lfs checkout
+}
+
 function install_dependencies() {
     # Setup the dependencies
     ansible-playbook install-dependencies.yml --extra-vars=hosts=localhost
 
 }
 
-ALLOWED_FUNCTIONS=("install_ansible" "install_dependencies")
+ALLOWED_FUNCTIONS=("install_ansible" "install_lfs" "install_dependencies")
 if [ $# -gt 1 ]; then
     echo "Usage: ${0} ( ${ALLOWED_FUNCTIONS[@]} )"
     exit 1
