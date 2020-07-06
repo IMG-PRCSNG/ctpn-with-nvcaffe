@@ -137,8 +137,8 @@
 
     - name: copy-model
       copy:
-        dest: "/content/ctpn/models/ctpn_trained_model.caffemodel"
-        src: "/content/gdrive/My Drive/drive-sync/ctpn_trained_model.caffemodel"
+        dest: "ctpn/models/ctpn_trained_model.caffemodel"
+        src: "ctpn.caffemodel"
         mode: 0644
 
 - name: cleanup
