@@ -5,7 +5,7 @@ to make use of the latest features in NVCaffe to improve memory and inference pe
 
 # Instructions
 
-1. Open this [Notebook](#ctpn_with_nvcaffe.ipynb)
+1. Open this [Notebook](ctpn_with_nvcaffe.ipynb)
 2. Click `Open in Colab`
 3. Connect to a Runtime with GPU.
 
