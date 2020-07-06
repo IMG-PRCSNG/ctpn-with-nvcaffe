@@ -9,8 +9,8 @@ CTPN: Link to [fork](https://github.com/IMG-PRCSNG/CTPN) used in the project
 
 # Instructions
 
-1. Open this [Notebook](ctpn_with_nvcaffe.ipynb)
+1. Open this notebook - [ctpn_with_nvcaffe.ipynb](ctpn_with_nvcaffe.ipynb)
 2. Click `Open in Colab`
-3. Connect to a Runtime with GPU.
+3. Connect to a Runtime with GPU and execute.
 
 Have fun!
